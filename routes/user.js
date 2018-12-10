@@ -14,7 +14,10 @@ router.post('/register', [
     check('confirm_password', "confirm_password is required").not().isEmpty()
 ], (req, res, next) => {
     const errors = validationResult(req);
-    const savingData = () => {
+
+    if (!errors.isEmpty()) {
+        res.status(400).send(errors.array());
+    } else {
         if (req.body.password == req.body.confirm_password) {
             User.findOne({ email: req.body.email }).then((result) => {
                 if (result) {
@@ -36,12 +39,7 @@ router.post('/register', [
         }
     }
 
-    if (!errors.isEmpty()) {
-        res.status(400).send(errors.array());
-    } else {
-        savingData();
-    }
-
 });
+
 
 module.exports = router;

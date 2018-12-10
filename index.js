@@ -8,6 +8,7 @@ const app = express();
 //connect to mongodb
 mongoose.connect('mongodb://pharaj:abc123@ds129454.mlab.com:29454/mydb', { useNewUrlParser: true });
 mongoose.Promise = global.Promise;
+mongoose.set('useCreateIndex', true);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
