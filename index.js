@@ -10,6 +10,7 @@ mongoose.connect('mongodb://pharaj:abc123@ds129454.mlab.com:29454/mydb', { useNe
 mongoose.Promise = global.Promise;
 mongoose.set('useCreateIndex', true);
 
+//body-parser middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
