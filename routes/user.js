@@ -6,16 +6,16 @@ const { check, validationResult } = require('express-validator/check')
 
 function validateToken(req, res, next) {
     var token = req.headers['authorization']
-    if (token && token.match(/^[0-9a-fA-F]{24}$/)) {
-        User.findById(req.headers['authorization']).then(result => {
+    if (token) {
+        User.findById(token).then(result => {
             if (result) {
-                next(result);
+                next();
             } else {
                 res.status(500).send('forbidden');
             }
         })
     } else {
-        res.send('forbidden**');
+        res.status(500).send('forbidden**');
     }
 }
 
@@ -91,7 +91,9 @@ router.post('/login', [
 
 //route to get user data
 router.get('/get', validateToken, (req, res, next) => {
-    res.send(result);
+    User.find({}).then(data => {
+        res.json(data);
+    })
 });
 
 
