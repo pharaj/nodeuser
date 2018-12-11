@@ -4,7 +4,7 @@ const User = require('../collections/usermodel');
 const UserProfile = require('../collections/userprofilemodel');
 const { check, validationResult } = require('express-validator/check')
 
-
+//route for register
 router.post('/register', [
     check('first_name', "first name is required").not().isEmpty(),
     check('last_name', "last name is required").not().isEmpty(),
@@ -27,8 +27,14 @@ router.post('/register', [
                         if (response) {
                             res.status(400).send('username already existed');
                         } else {
-                            User.create(req.body).then((data) => {
-                                res.send(data);
+                            let newUser = new User();
+                            newUser.first_name = req.body.first_name;
+                            newUser.last_name = req.body.last_name;
+                            newUser.user_name = req.body.user_name;
+                            newUser.email = req.body.email;
+                            newUser.setPassword(req.body.password);
+                            newUser.save().then(result => {
+                                res.send(result);
                             })
                         }
                     })
@@ -41,5 +47,38 @@ router.post('/register', [
 
 });
 
+
+//route for login
+router.post('/login', [
+    check('user_name', "user name is required").not().isEmpty(),
+    check('password', "password is required").not().isEmpty()
+], (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send(errors.array());
+    } else {
+        User.findOne({ user_name: req.body.user_name }).then(result => {
+            if (result) {
+                if (result.validPassword(req.body.password)) {
+                    res.send(result._id);
+                } else {
+                    res.status(500).send('password is incorrect');
+                }
+
+            } else {
+                res.status(500).send('User name incorrect');
+            }
+        })
+    }
+});
+
+
+//route to get user data
+router.get('/get', (req, res, next) => {
+    User.find({}).then(result => {
+        res.send(result);
+    })
+});
 
 module.exports = router;
