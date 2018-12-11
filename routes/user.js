@@ -43,15 +43,15 @@ router.post('/register', [
 
 
 //route for login
-router.post('/login',[
+router.post('/login', [
     check('user_name', "user name is required").not().isEmpty(),
     check('password', "password is required").not().isEmpty()
 ], (req, res, next) => {
     const errors = validationResult(req);
-    
-    if(!errors.isEmpty()){
+
+    if (!errors.isEmpty()) {
         res.status(400).send(errors.array());
-    }else{
+    } else {
         User.findOne({ user_name: req.body.user_name }).then((result) => {
             if (result) {
                 User.findOne({ password: req.body.password }).then((data) => {
@@ -65,7 +65,15 @@ router.post('/login',[
                 res.status(500).send("user name is incorrect");
             }
         }).catch(next);
-    } 
+    }
+});
+
+
+//route to get user data
+router.get('/get', (req, res, next) => {
+    User.find({}).then(result => {
+        res.send(result);
+    })
 });
 
 module.exports = router;
