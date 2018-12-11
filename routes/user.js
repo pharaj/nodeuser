@@ -27,8 +27,14 @@ router.post('/register', [
                         if (response) {
                             res.status(400).send('username already existed');
                         } else {
-                            User.create(req.body).then((data) => {
-                                res.send(data);
+                            let newUser = new User();
+                            newUser.first_name = req.body.first_name;
+                            newUser.last_name = req.body.last_name;
+                            newUser.user_name = req.body.user_name;
+                            newUser.email = req.body.email;
+                            newUser.setPassword(req.body.password);
+                            newUser.save().then(result => {
+                                res.send(result);
                             })
                         }
                     })
@@ -52,13 +58,18 @@ router.post('/login', [
     if (!errors.isEmpty()) {
         res.status(400).send(errors.array());
     } else {
-        User.findOne({ user_name: req.body.user_name, password: req.body.password }).then(result => {
+        User.findOne({ user_name: req.body.user_name }).then(result => {
             if (result) {
-                res.send(result._id);
+                if (result.validPassword(req.body.password)) {
+                    res.send(result._id);
+                } else {
+                    res.status(500).send('password is incorrect');
+                }
+
             } else {
-                res.status(500).send("username or password wrong");
+                res.status(500).send('User name incorrect');
             }
-        }).catch(next);
+        })
     }
 });
 
