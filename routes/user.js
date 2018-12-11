@@ -52,17 +52,11 @@ router.post('/login', [
     if (!errors.isEmpty()) {
         res.status(400).send(errors.array());
     } else {
-        User.findOne({ user_name: req.body.user_name }).then((result) => {
+        User.findOne({ user_name: req.body.user_name, password: req.body.password }).then(result => {
             if (result) {
-                User.findOne({ password: req.body.password }).then((data) => {
-                    if (data) {
-                        res.send(result._id);
-                    } else {
-                        res.status(500).send('password is incorrect');
-                    }
-                })
+                res.send(result._id);
             } else {
-                res.status(500).send("user name is incorrect");
+                res.status(500).send("username or password wrong");
             }
         }).catch(next);
     }
