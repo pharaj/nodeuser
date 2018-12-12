@@ -91,7 +91,16 @@ router.get('/get', validateToken, async (req, res, next) => {
 router.put('/delete', validateToken, async (req, res, next) => {
     const response = await User.findOneAndDelete({ _id: req.headers['authorization'] });
     res.json(response);
-})
+});
+
+
+//route to return list of users
+router.get('/list/:page/:count', async (req, res, next) => {
+    const pagenum = Number(req.params.page);
+    const usercount = Number(req.params.count);
+    const data = await User.find({}).skip(pagenum * usercount).limit(usercount);
+    res.json(data);
+});
 
 
 
