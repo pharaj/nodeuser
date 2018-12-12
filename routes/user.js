@@ -97,5 +97,14 @@ router.get('/get', validateToken, (req, res, next) => {
 });
 
 
+//route to delete user data
+router.put('/delete', validateToken, (req, res, next) => {
+    User.findOneAndDelete({ _id: req.headers['authorization'] }).then(data => {
+        //deleted user data
+        res.json(data);
+    })
+})
+
+
 
 module.exports = router;
