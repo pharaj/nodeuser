@@ -4,6 +4,21 @@ const User = require('../collections/usermodel');
 const UserProfile = require('../collections/userprofilemodel');
 const { check, validationResult } = require('express-validator/check')
 
+function validateToken(req, res, next) {
+    var token = req.headers['authorization']
+    if (token) {
+        User.findById(token).then(result => {
+            if (result) {
+                next();
+            } else {
+                res.status(500).send('forbidden');
+            }
+        })
+    } else {
+        res.status(500).send('forbidden**');
+    }
+}
+
 //route for register
 router.post('/register', [
     check('first_name', "first name is required").not().isEmpty(),
@@ -75,10 +90,12 @@ router.post('/login', [
 
 
 //route to get user data
-router.get('/get', (req, res, next) => {
-    User.find({}).then(result => {
-        res.send(result);
+router.get('/get', validateToken, (req, res, next) => {
+    User.find({}).then(data => {
+        res.json(data);
     })
 });
+
+
 
 module.exports = router;
