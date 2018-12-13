@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../collections/usermodel');
 const UserProfile = require('../collections/userprofilemodel');
-const { check, validationResult } = require('express-validator/check')
+const { check, validationResult } = require('express-validator/check');
+const md5 = require('md5');
 
 const validateToken = async (req, res, next) => {
     let token = req.headers['authorization']
@@ -18,11 +19,27 @@ const validateToken = async (req, res, next) => {
     }
 }
 
+const authorization = async (req, res, next) => {
+    let token = req.headers['x-auth-token']
+    if (token) {
+        const result = await UserProfile.findOne({ access_token: token });
+        if (result) {
+            next();
+        } else {
+            res.json('not authorized');
+        }
+    } else {
+        res.status(500).json('token is required')
+    }
+}
+
+
 //route for register
 router.post('/register', [
     check('first_name', "first name is required").not().isEmpty(),
     check('last_name', "last name is required").not().isEmpty(),
     check('email', "email is required").not().isEmpty(),
+    check('email', "should be a email").isEmail(),
     check('user_name', "user name is required").not().isEmpty(),
     check('password', "password is required").not().isEmpty(),
     check('confirm_password', "confirm_password is required").not().isEmpty()
@@ -52,7 +69,7 @@ router.post('/register', [
                 }
             }
         } else {
-            res.send('password not matched');
+            res.status(400).send('password not matched');
         }
     }
 
@@ -71,7 +88,10 @@ router.post('/login', [
         const result = await User.findOne({ user_name: req.body.user_name })
         if (result) {
             if (result.validPassword(req.body.password)) {
-                res.json(result._id);
+                let newProfile = new UserProfile();
+                const token = newProfile.getToken(result);
+                const saveprofile = await newProfile.save()
+                res.header('x-auth-token', token).json(result);
             } else {
                 res.status(500).send('password is incorrect');
             }
@@ -101,6 +121,12 @@ router.get('/list/:page/:count', async (req, res, next) => {
     const data = await User.find({}).skip(pagenum * usercount).limit(usercount);
     res.json(data);
 });
+
+
+//route for user address
+router.post('/address', authorization, (req, res, next) => {
+    res.json('authorization compeleted');
+})
 
 
 
