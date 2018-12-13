@@ -19,6 +19,20 @@ const validateToken = async (req, res, next) => {
     }
 }
 
+const authorization = async (req, res, next) => {
+    let token = req.headers['x-auth-token']
+    if (token) {
+        const result = await UserProfile.findOne({ access_token: token });
+        if (result) {
+            next();
+        } else {
+            res.json('not authorized');
+        }
+    } else {
+        res.status(500).json('token is required')
+    }
+}
+
 
 //route for register
 router.post('/register', [
@@ -76,6 +90,7 @@ router.post('/login', [
             if (result.validPassword(req.body.password)) {
                 let newProfile = new UserProfile();
                 const token = newProfile.getToken(result);
+                const saveprofile = await newProfile.save()
                 res.header('x-auth-token', token).json(result);
             } else {
                 res.status(500).send('password is incorrect');
@@ -106,6 +121,12 @@ router.get('/list/:page/:count', async (req, res, next) => {
     const data = await User.find({}).skip(pagenum * usercount).limit(usercount);
     res.json(data);
 });
+
+
+//route for user address
+router.post('/address', authorization, (req, res, next) => {
+    res.json('authorization compeleted');
+})
 
 
 
